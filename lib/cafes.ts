@@ -26,8 +26,16 @@ export const cafes: Record<string, Cafe> = {
     name: "Hamburg",
     description: "Шаурма, донеры, напитки",
     chatId: "-5273899800",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4",
+    image: "cafes/hamburg/main_img/hamburg_main_img.jpg",
     menu: [
+      {
+        id: "Pizza",
+        name: "Пиццы",
+        items: [
+          { id: 1, name: "Пицца Цезарь", price: 970, image: "/cafes/hamburg/pizza_cizar.jpg" },
+          { id: 2, name: "Донер с курицей", price: 220, image: "/cafes/hamburg/pizza_caesar.jpg" },
+        ],
+      },
       {
         id: "fastfood",
         name: "🌯 Фастфуд",

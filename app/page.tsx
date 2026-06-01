@@ -15,9 +15,9 @@ export default function Home() {
       {/* HERO */}
       <div className="relative bg-zinc-800 overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200"
+          src="/hero.jpg"
           alt="hero"
-          className="w-full h-72 object-cover opacity-40"
+          className="w-full h-72 object-cover opacity-70"
         />
         <div className="absolute inset-0 flex flex-col justify-center px-8">
           <h2 className="text-4xl font-extrabold text-white mb-2">
@@ -32,7 +32,7 @@ export default function Home() {
         <h2 className="text-xl font-bold text-zinc-300 mb-4 uppercase tracking-widest">
           Рестораны
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.values(cafes).map((cafe) => (
             <Link key={cafe.slug} href={`/cafe/${cafe.slug}`}>
               <div className="bg-zinc-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-green-400 transition">
