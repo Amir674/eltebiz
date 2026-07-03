@@ -13,17 +13,18 @@ export default function Home() {
       </div>
 
       {/* HERO */}
-      <div className="relative bg-zinc-800 overflow-hidden">
+      <div>
         <img
           src="/hero.jpg"
           alt="hero"
-          className="w-full h-72 object-cover opacity-70"
+          className="w-full h-64 md:h-96 object-cover"
         />
-        <div className="absolute inset-0 flex flex-col justify-center px-8">
-          <h2 className="text-4xl font-extrabold text-white mb-2">
-            <span className="text-green-400">eltebiz </span>Быстро доставит <span className="text-green-400">еду</span> по Малокарачаевскому району
+        <div className="px-6 py-8 md:px-10 md:py-10 max-w-2xl">
+          <h2 className="text-2xl md:text-4xl font-extrabold text-white mb-2 leading-tight">
+            <span className="text-green-400">eltebiz </span>
+            быстро доставит <span className="text-green-400">еду</span> по Малокарачаевскому району
           </h2>
-          <p className="text-zinc-300 text-lg">Прямо к вашей двери</p>
+          <p className="text-zinc-300 text-base md:text-lg">Прямо к вашей двери</p>
         </div>
       </div>
 

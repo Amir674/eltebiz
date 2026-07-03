@@ -28,7 +28,7 @@ export const cafes: Record<string, Cafe> = {
     name: "Hamburg",
     description: "Шаурма, донеры, напитки",
     chatId: "-5273899800",
-    image: "/cafes/hamburg/main_img/hamburg_main_img.jpg",
+    image: "/cafes/hamburg/main_img/hamburg_main_img3.jpg",
     menu: [
       {
         id: "Pizza",

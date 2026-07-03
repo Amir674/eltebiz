@@ -6,6 +6,24 @@ import { useParams } from "next/navigation";
 import { getCafe } from "@/lib/cafes";
 import Footer from "@/components/Footer";
 
+// Простая проверка российского номера: 10-11 цифр, начинается на 7/8/9
+function isValidPhone(raw: string) {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11 && (digits.startsWith("7") || digits.startsWith("8"))) {
+    return true;
+  }
+  if (digits.length === 10 && digits.startsWith("9")) {
+    return true;
+  }
+  return false;
+}
+
+type Errors = {
+  name?: string;
+  phone?: string;
+  address?: string;
+};
+
 export default function CafePage() {
   const params = useParams();
   const cafe = getCafe(params.slug as string);
@@ -20,6 +38,10 @@ export default function CafePage() {
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [orderSent, setOrderSent] = useState(false);
   const [sentTotal, setSentTotal] = useState(0);
+
+  const [errors, setErrors] = useState<Errors>({});
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   if (!cafe) {
     return (
@@ -58,9 +80,35 @@ export default function CafePage() {
   const totalPrice = cartItems.reduce((sum, { item, qty }) => sum + item.price * qty, 0);
   const totalCount = cartItems.reduce((sum, { qty }) => sum + qty, 0);
 
+  function validate(): boolean {
+    const next: Errors = {};
+
+    if (name.trim().length < 2) {
+      next.name = "Введите имя (минимум 2 символа)";
+    }
+
+    if (!isValidPhone(phone)) {
+      next.phone = "Введите корректный номер, например +7 928 000-00-00";
+    }
+
+    if (address.trim().length < 5) {
+      next.address = "Укажите адрес доставки";
+    }
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
   const sendOrder = async () => {
+    setSendError(null);
+
+    if (!validate()) {
+      return;
+    }
+
+    setSending(true);
     try {
-      await fetch("/api/send-order", {
+      const res = await fetch("/api/send-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,13 +124,24 @@ export default function CafePage() {
         }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Сервер ответил ошибкой: ${res.status}`);
+      }
+
       setSentTotal(totalPrice);
       setOrderSent(true);
-      setCart({}); // FIX: was setCart([])
+      setCart({});
       setShowCheckout(false);
       setShowMobileCart(false);
+      setName("");
+      setPhone("");
+      setAddress("");
+      setComment("");
+      setErrors({});
     } catch (err) {
-      alert("Ошибка отправки");
+      setSendError("Не удалось отправить заказ. Проверьте интернет и попробуйте ещё раз, либо позвоните нам.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -266,24 +325,46 @@ export default function CafePage() {
               ✕
             </button>
             <h2 className="text-2xl font-bold text-white mb-4">Оформление</h2>
+
             <input
-              className="w-full bg-zinc-700 text-white border border-zinc-600 p-3 rounded-xl mb-2 placeholder-zinc-400"
+              className={`w-full bg-zinc-700 text-white border p-3 rounded-xl mb-1 placeholder-zinc-400 ${
+                errors.name ? "border-red-500" : "border-zinc-600"
+              }`}
               placeholder="Имя"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+              }}
             />
+            {errors.name && <p className="text-red-400 text-xs mb-2">{errors.name}</p>}
+
             <input
-              className="w-full bg-zinc-700 text-white border border-zinc-600 p-3 rounded-xl mb-2 placeholder-zinc-400"
-              placeholder="Телефон"
+              className={`w-full bg-zinc-700 text-white border p-3 rounded-xl mb-1 placeholder-zinc-400 ${
+                errors.phone ? "border-red-500" : "border-zinc-600"
+              }`}
+              placeholder="Телефон, например +7 928 000-00-00"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+              }}
             />
+            {errors.phone && <p className="text-red-400 text-xs mb-2">{errors.phone}</p>}
+
             <input
-              className="w-full bg-zinc-700 text-white border border-zinc-600 p-3 rounded-xl mb-2 placeholder-zinc-400"
+              className={`w-full bg-zinc-700 text-white border p-3 rounded-xl mb-1 placeholder-zinc-400 ${
+                errors.address ? "border-red-500" : "border-zinc-600"
+              }`}
               placeholder="Адрес"
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={(e) => {
+                setAddress(e.target.value);
+                if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }));
+              }}
             />
+            {errors.address && <p className="text-red-400 text-xs mb-2">{errors.address}</p>}
+
             <textarea
               className="w-full bg-zinc-700 text-white border border-zinc-600 p-3 rounded-xl mb-2 placeholder-zinc-400"
               placeholder="Комментарий"
@@ -299,11 +380,19 @@ export default function CafePage() {
               <option>Наличка</option>
               <option>Перевод</option>
             </select>
+
+            {sendError && (
+              <div className="mb-4 text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-xl px-3 py-2">
+                {sendError}
+              </div>
+            )}
+
             <button
               onClick={sendOrder}
-              className="w-full bg-green-500 hover:bg-green-400 text-white py-3 rounded-xl font-semibold transition"
+              disabled={sending}
+              className="w-full bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition"
             >
-              Отправить заказ
+              {sending ? "Отправляем..." : "Отправить заказ"}
             </button>
           </div>
         </div>
